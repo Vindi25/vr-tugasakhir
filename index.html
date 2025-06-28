@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>VR Sistem Pencernaan Interaktif</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+</head>
+<body>
+  <a-scene background="color: #f3f3f3" raycaster="objects: .clickable" cursor="rayOrigin: mouse">
+
+    <!-- Pencahayaan -->
+    <a-entity light="type: ambient; intensity: 1.0"></a-entity>
+    <a-entity light="type: directional; intensity: 0.8" position="1 2 1"></a-entity>
+
+    <!-- Asset -->
+    <a-assets>
+      <a-asset-item id="digestive" src="./source/pencernaan.glb"></a-asset-item>
+    </a-assets>
+
+    <!-- Model -->
+    <a-entity id="organ-model"
+              gltf-model="#digestive"
+              position="0 0 -2"
+              scale="1.2 1.2 1.2"
+              rotation="0 180 0">
+    </a-entity>
+
+    <!-- Kamera & Cursor -->
+    <a-entity id="cameraRig" position="0 1.6 0">
+      <a-entity camera look-controls wasd-controls>
+        <a-cursor color="black"></a-cursor>
+      </a-entity>
+    </a-entity>
+
+    <!-- Trigger Area Organ -->
+    <a-box id="mouth" position="0 1.5 -2" width="0.3" height="0.3" depth="0.3" opacity="0.001" class="clickable"></a-box>
+    <a-box id="stomach" position="0 0.5 -2" width="0.4" height="0.4" depth="0.4" opacity="0.001" class="clickable"></a-box>
+    <a-box id="liver" position="-0.3 0.6 -2" width="0.4" height="0.3" depth="0.3" opacity="0.001" class="clickable"></a-box>
+    <a-box id="small-intestine" position="0 -0.3 -2" width="0.5" height="0.5" depth="0.5" opacity="0.001" class="clickable"></a-box>
+    <a-box id="large-intestine" position="0 -0.6 -2" width="0.6" height="0.4" depth="0.4" opacity="0.001" class="clickable"></a-box>
+
+    <!-- Script -->
+    <script>
+      const model = document.querySelector('#organ-model');
+      const cameraRig = document.querySelector('#cameraRig');
+
+      let rotating = true;
+      let currentZoom = null; // untuk cek sedang zoom atau tidak
+
+      // Fungsi rotasi model
+      function startRotation() {
+        model.setAttribute('animation__rotate', 'property: rotation; to: 0 540 0; loop: true; dur: 20000');
+        rotating = true;
+      }
+
+      function stopRotation() {
+        model.removeAttribute('animation__rotate');
+        rotating = false;
+      }
+
+      model.addEventListener('click', () => {
+        rotating ? stopRotation() : startRotation();
+      });
+
+      // Posisi awal kamera
+      const defaultCamPos = {x: 0, y: 1.6, z: 0};
+
+      // Fungsi zoom organ
+      function setupZoomablePart(id, zoomPos) {
+        const el = document.querySelector(id);
+        el.addEventListener('click', () => {
+          if (currentZoom === id) {
+            cameraRig.setAttribute('position', defaultCamPos); // kembali
+            currentZoom = null;
+          } else {
+            cameraRig.setAttribute('position', zoomPos); // zoom in
+            currentZoom = id;
+          }
+        });
+      }
+
+      // Set organ dan posisi zoomnya
+      setupZoomablePart('#mouth', {x: 0, y: 1.5, z: -1});
+      setupZoomablePart('#stomach', {x: 0, y: 0.5, z: -1});
+      setupZoomablePart('#liver', {x: -0.5, y: 0.6, z: -1});
+      setupZoomablePart('#small-intestine', {x: 0, y: -0.3, z: -1});
+      setupZoomablePart('#large-intestine', {x: 0, y: -0.6, z: -1});
+
+      // Mulai muter dari awal
+      startRotation();
+    </script>
+
+  </a-scene>
+</body>
+</html>
